@@ -21,38 +21,21 @@ server.get('/keypair', (request, reply) => {
   }
 });
 
-const opts = {
+server.get('/fund', {
   schema: {
     querystring: {
-      type: 'object',
+      $id: 'example-parser',
       properties: {
-        address: {
+        keypair: {
           type: 'string'
-        },
-      },
+        }
+      }
     }
   }
-}
-
-const queryStringJsonSchema = {
-  type: 'object',
-  properties: {
-    address: { type: 'string' }
-  }
-}
-
-type FundRequest = FastifyRequest<{
-  Querystring: { address: string }
-}>
-
-const schema = {
-  querystring: queryStringJsonSchema
-}
-
-server.get('/fund', { schema }, async (request: FundRequest, reply) => {
+}, async (request, reply) => {
   try {
-    const address = request.query.address;
-    const newKeyPair = fundWallet(request.query.address<string>);
+    const fundQuery = request.query as FundQuery;
+    const newKeyPair = await fundWallet(fundQuery.keypair);
     reply.code(200).send(newKeyPair);
   } catch (error) {
     reply.code(500).send(error);
